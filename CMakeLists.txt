@@ -28,4 +28,4 @@ if (BUILD_EXAMPLES)
 endif ()
 
 # CTest is flaky - Create a target to run our test suite directly
-add_custom_target(test COMMAND ${PROJECT_BINARY_DIR}/test/Test)
+add_custom_target(tests COMMAND ${PROJECT_BINARY_DIR}/test/Test)
