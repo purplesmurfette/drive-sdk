@@ -645,8 +645,7 @@ anki_vehicle_light_channel_t get_channel_by_name(const char *name)
 
         uint8_t count = sizeof(channels_by_name)/sizeof(channels_by_name[0]);
         for (i = 0; i < count; i++) {
-                uint8_t len = MAX(strlen(name), strlen(channels_by_name[i]));
-                if (strncmp(name, channels_by_name[i], len) == 0) {
+                if (channels_by_name[i] != NULL && strcmp(name, channels_by_name[i]) == 0) {
                     channel = i;
                     break;
                 }
@@ -658,7 +657,7 @@ anki_vehicle_light_channel_t get_channel_by_name(const char *name)
 anki_vehicle_light_effect_t get_effect_by_name(const char *name)
 {
         uint8_t i;
-        uint8_t effect = channel_invalid;
+        uint8_t effect = effect_invalid;
 
         if (name == NULL)
             return effect;
