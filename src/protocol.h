@@ -202,8 +202,6 @@ typedef struct anki_vehicle_msg_localization_transition_update {
     uint8_t     road_piece_idx_prev;
     float       offset_from_road_center_mm;
 
-    uint8_t     driving_direction;
-
     /* ACK commands received */
     uint8_t     last_recv_lane_change_id;
     uint8_t     last_exec_lane_change_id;
@@ -218,7 +216,7 @@ typedef struct anki_vehicle_msg_localization_transition_update {
     uint8_t     left_wheel_dist_cm;
     uint8_t     right_wheel_dist_cm;
 } ATTRIBUTE_PACKED anki_vehicle_msg_localization_transition_update_t;
-#define ANKI_VEHICLE_MSG_V2C_LOCALIZATION_TRANSITION_UPDATE_SIZE    18 
+#define ANKI_VEHICLE_MSG_V2C_LOCALIZATION_TRANSITION_UPDATE_SIZE    17 
 
 typedef enum {
     INTERSECTION_CODE_ENTRY_FIRST,
