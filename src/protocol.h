@@ -30,45 +30,47 @@ ANKI_BEGIN_DECL
 /** Identifier for a vehicle message */
 enum {
     // BLE Connections
-    ANKI_VEHICLE_MSG_C2V_DISCONNECT = 0x0d,
+    ANKI_VEHICLE_MSG_C2V_DISCONNECT = 0x0d, // 13
 
     // Ping request / response
-    ANKI_VEHICLE_MSG_C2V_PING_REQUEST = 0x16,
-    ANKI_VEHICLE_MSG_V2C_PING_RESPONSE = 0x17,
+    ANKI_VEHICLE_MSG_C2V_PING_REQUEST = 0x16, // 22
+    ANKI_VEHICLE_MSG_V2C_PING_RESPONSE = 0x17, // 23
 
     // Messages for checking vehicle version info
-    ANKI_VEHICLE_MSG_C2V_VERSION_REQUEST = 0x18,
-    ANKI_VEHICLE_MSG_V2C_VERSION_RESPONSE = 0x19,
+    ANKI_VEHICLE_MSG_C2V_VERSION_REQUEST = 0x18, // 24
+    ANKI_VEHICLE_MSG_V2C_VERSION_RESPONSE = 0x19, // 25
 
     // Battery level
-    ANKI_VEHICLE_MSG_C2V_BATTERY_LEVEL_REQUEST = 0x1a,
-    ANKI_VEHICLE_MSG_V2C_BATTERY_LEVEL_RESPONSE = 0x1b,
+    ANKI_VEHICLE_MSG_C2V_BATTERY_LEVEL_REQUEST = 0x1a, // 26
+    ANKI_VEHICLE_MSG_V2C_BATTERY_LEVEL_RESPONSE = 0x1b, // 27
 
     // Lights
-    ANKI_VEHICLE_MSG_C2V_SET_LIGHTS = 0x1d,
+    ANKI_VEHICLE_MSG_C2V_SET_LIGHTS = 0x1d, // 29
 
     // Driving Commands
-    ANKI_VEHICLE_MSG_C2V_SET_SPEED = 0x24,
-    ANKI_VEHICLE_MSG_C2V_CHANGE_LANE = 0x25,
-    ANKI_VEHICLE_MSG_C2V_CANCEL_LANE_CHANGE = 0x26,
-    ANKI_VEHICLE_MSG_C2V_TURN = 0x32,
+    ANKI_VEHICLE_MSG_C2V_SET_SPEED = 0x24, // 36
+    ANKI_VEHICLE_MSG_C2V_CHANGE_LANE = 0x25, // 37
+    ANKI_VEHICLE_MSG_C2V_CANCEL_LANE_CHANGE = 0x26, // 38
 
     // Vehicle position updates
-    ANKI_VEHICLE_MSG_V2C_LOCALIZATION_POSITION_UPDATE = 0x27,
-    ANKI_VEHICLE_MSG_V2C_LOCALIZATION_TRANSITION_UPDATE = 0x29,
-    ANKI_VEHICLE_MSG_V2C_LOCALIZATION_INTERSECTION_UPDATE = 0x2a,
-    ANKI_VEHICLE_MSG_V2C_VEHICLE_DELOCALIZED = 0x2b,
-    ANKI_VEHICLE_MSG_C2V_SET_OFFSET_FROM_ROAD_CENTER = 0x2c,
-    ANKI_VEHICLE_MSG_V2C_OFFSET_FROM_ROAD_CENTER_UPDATE = 0x2d,
+    ANKI_VEHICLE_MSG_V2C_LOCALIZATION_POSITION_UPDATE = 0x27, // 39
+    ANKI_VEHICLE_MSG_V2C_LOCALIZATION_TRANSITION_UPDATE = 0x29, // 41
+    ANKI_VEHICLE_MSG_V2C_LOCALIZATION_INTERSECTION_UPDATE = 0x2a, // 42
+    ANKI_VEHICLE_MSG_V2C_VEHICLE_DELOCALIZED = 0x2b, // 43
+    ANKI_VEHICLE_MSG_C2V_SET_OFFSET_FROM_ROAD_CENTER = 0x2c, // 44
+    ANKI_VEHICLE_MSG_V2C_OFFSET_FROM_ROAD_CENTER_UPDATE = 0x2d, // 45
+
+    // Turn Command
+    ANKI_VEHICLE_MSG_C2V_TURN = 0x32, // 50
 
     // Light Patterns
-    ANKI_VEHICLE_MSG_C2V_LIGHTS_PATTERN = 0x33,
+    ANKI_VEHICLE_MSG_C2V_LIGHTS_PATTERN = 0x33, // 51
 
     // Vehicle Configuration Parameters
-    ANKI_VEHICLE_MSG_C2V_SET_CONFIG_PARAMS = 0x45,
+    ANKI_VEHICLE_MSG_C2V_SET_CONFIG_PARAMS = 0x45, // 69
 
     // SDK Mode
-    ANKI_VEHICLE_MSG_C2V_SDK_MODE = 0x90,
+    ANKI_VEHICLE_MSG_C2V_SDK_MODE = 0x90, // 144
 };
 
 #define ATTRIBUTE_PACKED  __attribute__((packed))
@@ -185,7 +187,7 @@ typedef struct anki_vehicle_msg_localization_position_update {
     /* ACK commands received */
     uint8_t     last_recv_lane_change_cmd_id;
     uint8_t     last_exec_lane_change_cmd_id;
-    uint16_t    last_desired_horizontal_speed_mm_per_sec;
+    uint16_t    last_desired_lane_change_speed_mm_per_sec;
     uint16_t    last_desired_speed_mm_per_sec;
 } ATTRIBUTE_PACKED anki_vehicle_msg_localization_position_update_t;
 #define ANKI_VEHICLE_MSG_V2C_LOCALIZATION_POSITION_UPDATE_SIZE  16
@@ -198,15 +200,16 @@ typedef enum anki_vehicle_driving_direction {
 typedef struct anki_vehicle_msg_localization_transition_update {
     uint8_t     size;
     uint8_t     msg_id;
-    uint8_t     road_piece_idx;
-    uint8_t     road_piece_idx_prev;
+    int8_t      road_piece_idx;
+    int8_t      road_piece_idx_prev;
     float       offset_from_road_center_mm;
 
     /* ACK commands received */
     uint8_t     last_recv_lane_change_id;
     uint8_t     last_exec_lane_change_id;
-    uint16_t    last_desired_horizontal_speed_mm_per_sec;
-    uint16_t    last_desired_speed_mm_per_sec;
+    uint16_t    last_desired_lane_change_speed_mm_per_sec;
+    int8_t      ave_follow_line_drift_pixels;
+    uint8_t     had_lane_change_activity;
 
     /* track grade detection */
     uint8_t     uphill_counter; 
@@ -219,6 +222,7 @@ typedef struct anki_vehicle_msg_localization_transition_update {
 #define ANKI_VEHICLE_MSG_V2C_LOCALIZATION_TRANSITION_UPDATE_SIZE    17 
 
 typedef enum {
+    INTERSECTION_CODE_NONE,
     INTERSECTION_CODE_ENTRY_FIRST,
     INTERSECTION_CODE_EXIT_FIRST,
     INTERSECTION_CODE_ENTRY_SECOND,
@@ -228,15 +232,15 @@ typedef enum {
 typedef struct anki_vehicle_msg_localization_intersection_update {
     uint8_t     size;
     uint8_t     msg_id;
-    uint8_t     road_piece_idx;
+    int8_t      road_piece_idx;
     float       offset_from_road_center_mm;
 
-    uint8_t     driving_direction;
     uint8_t     intersection_code;
-    uint8_t     intersection_turn;
     uint8_t     is_exiting;
+    uint16_t    mm_since_last_transition_bar;
+    uint16_t    mm_since_last_intersection_code;
 } ATTRIBUTE_PACKED anki_vehicle_msg_localization_intersection_update_t;
-#define ANKI_VEHICLE_MSG_V2C_LOCALIZATION_INTERSECTION_UPDATE_SIZE    10 
+#define ANKI_VEHICLE_MSG_V2C_LOCALIZATION_INTERSECTION_UPDATE_SIZE    12 
 
 typedef struct anki_vehicle_msg_offset_from_road_center_update {
     uint8_t     size;
